@@ -1,12 +1,15 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
-interface AuthRequest extends Request {
-  user?: any;
-}
+type UserToken = {
+  userId: string;
+  role: string;
+  iat?: number;
+  exp?: number;
+};
 
 export const authMiddleware = (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -22,7 +25,7 @@ export const authMiddleware = (
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET as string
-    );
+    ) as JwtPayload & UserToken;
 
     req.user = decoded;
 
