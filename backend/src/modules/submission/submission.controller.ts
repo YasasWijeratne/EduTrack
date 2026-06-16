@@ -6,6 +6,7 @@ import {
   updateSubmission,
   getMySubmission,
   getAssignmentSubmissions,
+  deleteSubmission,
 } from "./submission.service";
 
 
@@ -94,5 +95,28 @@ export const getAllForAssignment = async (
     res.json(result);
   } catch (err) {
     res.status(400).json({ message: (err as Error).message });
+  }
+};
+
+export const remove = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const assignmentId = getIdFromParams(
+      req,
+      "assignmentId"
+    );
+
+    const result = await deleteSubmission(
+      req.user!.userId,
+      assignmentId
+    );
+
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({
+      message: (err as Error).message,
+    });
   }
 };

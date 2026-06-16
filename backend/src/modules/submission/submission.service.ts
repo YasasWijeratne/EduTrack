@@ -135,3 +135,35 @@ export const getAssignmentSubmissions = async (
     assignment: assignmentId,
   }).populate("student", "firstName lastName email");
 };
+
+export const deleteSubmission = async (
+  studentId: string,
+  assignmentId: string
+) => {
+  const submission = await Submission.findOne({
+    student: studentId,
+    assignment: assignmentId,
+  });
+
+  if (!submission) {
+    throw new Error("Submission not found");
+  }
+
+  const assignment = await Assignment.findById(
+    assignmentId
+  );
+
+  if (!assignment) {
+    throw new Error("Assignment not found");
+  }
+
+  if (new Date() > assignment.dueDate) {
+    throw new Error("Deadline has passed");
+  }
+
+  await submission.deleteOne();
+
+  return {
+    message: "Submission deleted",
+  };
+};

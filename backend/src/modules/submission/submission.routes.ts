@@ -8,6 +8,7 @@ import {
   update,
   getMine,
   getAllForAssignment,
+  remove,
 } from "./submission.controller";
 
 const router = Router();
@@ -40,6 +41,13 @@ router.get(
   authMiddleware,
   roleMiddleware("lecturer"),
   getAllForAssignment
+);
+
+router.delete(
+  "/:assignmentId",
+  authMiddleware,
+  roleMiddleware("student"),
+  remove
 );
 
 export default router
