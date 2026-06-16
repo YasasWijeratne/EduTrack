@@ -5,6 +5,7 @@ import {
   createGrade,
   getStudentGrades,
   getAssignmentGrades,
+  getCourseResult,
 } from "./grade.service";
 
 
@@ -96,4 +97,39 @@ export const getByAssignment = async (
       message: (err as Error).message,
     });
   }
+};
+
+export const getCourseResults = async (
+  req: Request,
+  res: Response
+) => {
+
+  try {
+
+    const courseId =
+      getIdFromParams(
+        req,
+        "courseId"
+      );
+
+
+    const result =
+      await getCourseResult(
+        courseId,
+        req.user!.userId,
+        req.user!.role
+      );
+
+
+    res.json(result);
+
+
+  } catch(err){
+
+    res.status(400).json({
+      message:(err as Error).message
+    });
+
+  }
+
 };

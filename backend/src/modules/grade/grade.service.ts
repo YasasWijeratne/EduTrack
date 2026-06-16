@@ -172,3 +172,158 @@ export const getAssignmentGrades = async (
   );
 
 };
+
+export const getCourseResult = async (
+  courseId: string,
+  userId: string,
+  role: string
+) => {
+
+  const course =
+    await Course.findById(courseId);
+
+
+  if (!course) {
+    throw new Error(
+      "Course not found"
+    );
+  }
+
+
+  if (role === "student") {
+
+    const enrolled =
+      course.students.some(
+        id => id.toString() === userId
+      );
+
+
+    if (!enrolled) {
+      throw new Error(
+        "You are not enrolled in this course"
+      );
+    }
+
+  }
+
+
+  if (role === "lecturer") {
+
+    if (
+      course.lecturer.toString() !== userId
+    ) {
+      throw new Error(
+        "Not allowed to view this course results"
+      );
+    }
+  }
+
+
+  const assignments =
+    await Assignment.find({
+      course: courseId
+    });
+
+
+  if (assignments.length === 0) {
+    return {
+      marks: 0,
+      grade: "E",
+      status: "Fail",
+      message: "No assignments available"
+    };
+  }
+
+
+  const assignmentIds =
+    assignments.map(
+      assignment => assignment._id
+    );
+
+
+  const submissions =
+    await Submission.find({
+      assignment: {
+        $in: assignmentIds
+      }
+    });
+
+
+  const submissionIds =
+    submissions.map(
+      submission => submission._id
+    );
+
+
+  const grades =
+    await Grade.find({
+      submission: {
+        $in: submissionIds
+      }
+    });
+
+
+  if (grades.length === 0) {
+    return {
+      marks: 0,
+      grade: "E",
+      status: "Fail",
+      message: "No grades available"
+    };
+  }
+
+
+  const total =
+    grades.reduce(
+      (sum, item) => sum + item.marks,
+      0
+    );
+
+
+  const average =
+    total / grades.length;
+
+
+  const finalGrade =
+    calculateGrade(average);
+
+
+  let status =
+    "Fail";
+
+
+  if (average >= 45) {
+    status = "Pass";
+  }
+
+
+  let performance = "";
+
+
+  if (average >= 90) {
+    performance = "Excellent";
+  }
+  else if (average >= 75) {
+    performance = "Very Good";
+  }
+  else if (average >= 60) {
+    performance = "Good";
+  }
+  else if (average >= 45) {
+    performance = "Satisfactory";
+  }
+  else {
+    performance = "Needs Improvement";
+  }
+
+
+  return {
+    course: course.title,
+    assignmentsGraded: grades.length,
+    marks: Number(average.toFixed(2)),
+    grade: finalGrade,
+    status,
+    performance
+  };
+
+};

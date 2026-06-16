@@ -4,6 +4,7 @@ import {
   grade,
   getMine,
   getByAssignment,
+  getCourseResults
 } from "./grade.controller";
 
 import { authMiddleware } from "../../middleware/auth.middleware";
@@ -34,6 +35,12 @@ router.get(
   authMiddleware,
   roleMiddleware("lecturer"),
   getByAssignment
+);
+
+router.get(
+  "/course/:courseId",
+  authMiddleware,
+  getCourseResults
 );
 
 
