@@ -6,6 +6,7 @@ import { roleMiddleware } from "./middleware/role.middleware";
 import courseRoutes from "./modules/course/course.routes";
 import assignmentRoutes from "./modules/assignment/assignment.routes";
 import submissionRoutes from "./modules/submission/submission.routes";
+import gradeRoutes from "./modules/grade/grade.routes";
 import path from "path";
 
 const app = express();
@@ -25,6 +26,7 @@ app.use("/auth", authRoutes);
 app.use("/courses", courseRoutes);
 app.use("/assignments", assignmentRoutes);
 app.use("/submissions", submissionRoutes);
+app.use("/grades", gradeRoutes);
 
 app.get("/", (_req, res) => {
   res.send("EduTrack API Running");
