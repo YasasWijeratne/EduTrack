@@ -13,19 +13,26 @@ export const createSubmission = async (
     throw new Error("Assignment not found");
   }
 
-  // deadline check
   if (new Date() > assignment.dueDate) {
     throw new Error("Deadline has passed");
   }
 
-  // check course exists
   const course = await Course.findById(assignment.course);
 
   if (!course) {
     throw new Error("Course not found");
   }
 
-  // check if already submitted (your unique index also protects this)
+  const isEnrolled = course.students.some(
+  (id) => id.toString() === studentId
+  );
+
+  if (!isEnrolled) {
+    throw new Error(
+      "You must be enrolled in this course to submit assignments"
+    );
+  }
+
   const existing = await Submission.findOne({
     student: studentId,
     assignment: assignmentId,
@@ -56,10 +63,30 @@ export const updateSubmission = async (
     throw new Error("Submission not found");
   }
 
-  const assignment = await Assignment.findById(assignmentId);
+  const assignment = await Assignment.findById(
+    assignmentId
+  );
 
   if (!assignment) {
     throw new Error("Assignment not found");
+  }
+
+  const course = await Course.findById(
+    assignment.course
+  );
+
+  if (!course) {
+    throw new Error("Course not found");
+  }
+
+  const isEnrolled = course.students.some(
+    (id) => id.toString() === studentId
+  );
+
+  if (!isEnrolled) {
+    throw new Error(
+      "You must be enrolled in this course to submit assignments"
+    );
   }
 
   if (new Date() > assignment.dueDate) {
