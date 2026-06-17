@@ -73,3 +73,48 @@ export const loginUser = async (
     },
   };
 };
+
+export const adminLoginUser = async (
+  email: string,
+  password: string
+) => {
+
+  const user = await User.findOne({
+    email,
+  }).select("+password");
+
+  if (!user) {
+    throw new Error("Invalid credentials");
+  }
+
+  const isMatch = await bcrypt.compare(
+    password,
+    user.password
+  );
+
+  if (!isMatch) {
+    throw new Error("Invalid credentials");
+  }
+
+  if (user.role !== "admin") {
+    throw new Error(
+      "Admin access only"
+    );
+  }
+
+  const token = generateToken(
+    user._id.toString(),
+    user.role
+  );
+
+  return {
+    token,
+    user: {
+      id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+    },
+  };
+};

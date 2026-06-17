@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { registerUser } from "./auth.service";
 import { loginUser } from "./auth.service";
+import { adminLoginUser } from "./auth.service";
 
 export const register = async (
   req: Request,
@@ -41,5 +42,38 @@ export const login = async (req: Request, res: Response) => {
           ? error.message
           : "Login failed",
     });
+  }
+};
+
+export const adminLogin = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+
+    const {
+      email,
+      password,
+    } = req.body;
+
+    const result =
+      await adminLoginUser(
+        email,
+        password
+      );
+
+    res.status(200).json(
+      result
+    );
+
+  } catch (error) {
+
+    res.status(400).json({
+      message:
+        error instanceof Error
+          ? error.message
+          : "Login failed",
+    });
+
   }
 };
