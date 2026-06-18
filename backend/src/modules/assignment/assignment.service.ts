@@ -38,11 +38,106 @@ export const getLecturerAssignments = async (
 };
 
 export const getAssignmentsByCourse = async (
-  courseId: string
+  courseId: string,
+  userId: string,
+  userRole: string
 ) => {
+  const course = await Course.findById(courseId);
+
+  if (!course) {
+    throw new Error("Course not found");
+  }
+
+  if (userRole === "student") {
+    const isEnrolled = course.students.some(
+      (id) => id.toString() === userId
+    );
+
+    if (!isEnrolled) {
+      throw new Error("You are not enrolled in this course");
+    }
+  }
+
+  if (userRole === "lecturer") {
+    if (course.lecturer.toString() !== userId) {
+      throw new Error("Not allowed to view assignments for this course");
+    }
+  }
+
+  if (userRole === "admin") {
+    return await Assignment.find({
+      course: courseId,
+    });
+  }
+
   return await Assignment.find({
     course: courseId,
   });
+};
+
+export const getAssignmentsByCourseCode = async (
+  courseCode: string,
+  userId: string,
+  userRole: string
+) => {
+  const course = await Course.findOne({ code: courseCode });
+
+  if (!course) {
+    throw new Error("Course not found");
+  }
+
+  return await getAssignmentsByCourse(
+    course._id.toString(),
+    userId,
+    userRole
+  );
+};
+
+export const getAssignmentById = async (
+  assignmentId: string,
+  userId: string,
+  userRole: string
+) => {
+  const assignment = await Assignment.findById(assignmentId).populate(
+    "course",
+    "title code lecturer students"
+  );
+
+  if (!assignment) {
+    throw new Error("Assignment not found");
+  }
+
+  const course = await Course.findById(assignment.course);
+
+  if (!course) {
+    throw new Error("Course not found");
+  }
+
+  if (userRole === "admin") {
+    return assignment;
+  }
+
+  if (userRole === "lecturer") {
+    if (course.lecturer.toString() !== userId) {
+      throw new Error("Not allowed to view this assignment");
+    }
+
+    return assignment;
+  }
+
+  if (userRole === "student") {
+    const isEnrolled = course.students.some(
+      (id) => id.toString() === userId
+    );
+
+    if (!isEnrolled) {
+      throw new Error("You are not enrolled in this course");
+    }
+
+    return assignment;
+  }
+
+  throw new Error("Not allowed");
 };
 
 export const updateAssignment = async (

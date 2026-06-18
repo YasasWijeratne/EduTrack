@@ -4,6 +4,8 @@ import {
   create,
   getMyAssignments,
   getByCourse,
+  getByCourseCode,
+  getOne,
   update,
   remove,
 } from "./assignment.controller";
@@ -31,6 +33,18 @@ router.get(
   "/course/:courseId",
   authMiddleware,
   getByCourse
+);
+
+router.get(
+  "/course-code/:code",
+  authMiddleware,
+  getByCourseCode
+);
+
+router.get(
+  "/:id",
+  authMiddleware,
+  getOne
 );
 
 router.put(

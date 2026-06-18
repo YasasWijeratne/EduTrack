@@ -5,6 +5,8 @@ import {
   createAssignment,
   getLecturerAssignments,
   getAssignmentsByCourse,
+  getAssignmentsByCourseCode,
+  getAssignmentById,
   updateAssignment,
   deleteAssignment,
 } from "./assignment.service";
@@ -82,9 +84,51 @@ export const getByCourse = async (
     );
 
     const assignments =
-      await getAssignmentsByCourse(courseId);
+      await getAssignmentsByCourse(
+        courseId,
+        req.user!.userId,
+        req.user!.role
+      );
 
     res.json(assignments);
+  } catch (err) {
+    res
+      .status(400)
+      .json({ message: (err as Error).message });
+  }
+};
+
+export const getByCourseCode = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { code } = req.params as { code: string };
+    const assignments = await getAssignmentsByCourseCode(
+      code,
+      req.user!.userId,
+      req.user!.role
+    );
+    res.json(assignments);
+  } catch (err) {
+    res.status(400).json({ message: (err as Error).message });
+  }
+};
+
+export const getOne = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const assignmentId = getIdFromParams(req, "id");
+
+    const assignment = await getAssignmentById(
+      assignmentId,
+      req.user!.userId,
+      req.user!.role
+    );
+
+    res.json(assignment);
   } catch (err) {
     res
       .status(400)
