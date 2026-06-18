@@ -1,122 +1,71 @@
-import {
- createContext,
- useContext,
- useState,
-} from "react";
-
-import type { ReactNode } from "react";
-
-
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import type { User } from "../types/user";
+import { loginUser, registerUser, adminLogin as adminLoginService } from "../services/auth.service";
 
-import { loginUser } from "../services/auth.service";
-
-
-type AuthContextType = {
-
- user:User | null;
-
- login:
- (
- email:string,
- password:string
- )=>Promise<void>;
-
- logout:()=>void;
-
-};
-
-
-const AuthContext =
- createContext<AuthContextType | null>(null);
-
-
-
-export function AuthProvider(
- {
- children
- }:
- {
- children:ReactNode
- }
-){
-
- const [user,setUser] =
-   useState<User | null>(null);
-
-
-
- const login = async(
-   email:string,
-   password:string
- )=>{
-
-
-   const data =
-    await loginUser(
-      email,
-      password
-    );
-
-
-   localStorage.setItem(
-    "token",
-    data.token
-   );
-
-
-   setUser(data.user);
-
- };
-
-
-
- const logout = ()=>{
-
-   localStorage.removeItem(
-    "token"
-   );
-
-   setUser(null);
-
- };
-
-
- return (
-
- <AuthContext.Provider
- value={{
-   user,
-   login,
-   logout
- }}
- >
-
- {children}
-
- </AuthContext.Provider>
-
- );
-
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
+  adminLogin: (email: string, password: string) => Promise<void>;
+  logout: () => void;
 }
 
+const AuthContext = createContext<AuthContextType | null>(null);
 
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export function useAuth(){
+  // Rehydrate user from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      try {
+        setUser(JSON.parse(stored));
+      } catch {
+        localStorage.removeItem("user");
+      }
+    }
+    setLoading(false);
+  }, []);
 
- const context =
-  useContext(AuthContext);
+  const saveUser = (userData: User, token: string) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
+  };
 
+  const login = async (email: string, password: string) => {
+    const data = await loginUser(email, password);
+    saveUser(data.user, data.token);
+  };
 
- if(!context){
+  const register = async (firstName: string, lastName: string, email: string, password: string) => {
+    const data = await registerUser(firstName, lastName, email, password);
+    saveUser(data.user, data.token);
+  };
 
-  throw new Error(
-   "useAuth must be inside AuthProvider"
+  const adminLogin = async (email: string, password: string) => {
+    const data = await adminLoginService(email, password);
+    saveUser(data.user, data.token);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, loading, login, register, adminLogin, logout }}>
+      {children}
+    </AuthContext.Provider>
   );
+}
 
- }
-
-
- return context;
-
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be inside AuthProvider");
+  return ctx;
 }
