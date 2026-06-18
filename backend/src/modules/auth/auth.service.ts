@@ -57,6 +57,10 @@ export const loginUser = async (
     throw new Error("Invalid credentials");
   }
 
+  if (!user.isActive) {
+    throw new Error("Account is deactivated. Contact an administrator.");
+  }
+
   const token = generateToken(
     user._id.toString(),
     user.role
@@ -100,6 +104,10 @@ export const adminLoginUser = async (
     throw new Error(
       "Admin access only"
     );
+  }
+
+  if (!user.isActive) {
+    throw new Error("Account is deactivated. Contact an administrator.");
   }
 
   const token = generateToken(
