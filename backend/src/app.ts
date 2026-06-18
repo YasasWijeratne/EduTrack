@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import authRoutes from "./modules/auth/auth.routes";
+import adminRoutes from "./modules/admin/admin.routes";
 import { authMiddleware } from "./middleware/auth.middleware";
 import { roleMiddleware } from "./middleware/role.middleware";
 import courseRoutes from "./modules/course/course.routes";
@@ -23,6 +24,7 @@ app.use(
 
 //routes 
 app.use("/auth", authRoutes);
+app.use("/admin", adminRoutes);
 app.use("/courses", courseRoutes);
 app.use("/assignments", assignmentRoutes);
 app.use("/submissions", submissionRoutes);
