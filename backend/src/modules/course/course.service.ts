@@ -25,6 +25,24 @@ export const getLecturerCourses = async (lecturerId: string) => {
   return await Course.find({ lecturer: lecturerId });
 };
 
+export const getAllCourses = async () => {
+  return await Course.find().populate("lecturer", "firstName lastName email role");
+};
+
+export const getStudentCourses = async (studentId: string) => {
+  return await Course.find({ students: studentId }).populate("lecturer", "firstName lastName email role");
+};
+
+export const getCourseByCode = async (code: string) => {
+  const course = await Course.findOne({ code }).populate("lecturer", "firstName lastName email role");
+
+  if (!course) {
+    throw new Error("Course not found");
+  }
+
+  return course;
+};
+
 export const getCourseById = async (courseId: string, userId: string, userRole: string) => {
   const course = await Course.findById(courseId)
     .populate("lecturer", "firstName lastName");
@@ -135,6 +153,19 @@ export const enrollCourse = async (
   await course.save();
 
   return course;
+};
+
+export const enrollCourseByCode = async (
+  courseCode: string,
+  studentId: string
+) => {
+  const course = await Course.findOne({ code: courseCode });
+
+  if (!course) {
+    throw new Error("Course not found");
+  }
+
+  return await enrollCourse(course._id.toString(), studentId);
 };
 
 export const unenrollCourse = async (

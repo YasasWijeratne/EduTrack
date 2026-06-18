@@ -3,10 +3,14 @@ import mongoose from "mongoose";
 import {
   createCourse,
   getLecturerCourses,
+  getAllCourses,
+  getStudentCourses,
   getCourseById,
+  getCourseByCode,
   updateCourse,
   deleteCourse,
   enrollCourse,
+  enrollCourseByCode,
   unenrollCourse,
 } from "./course.service";
 
@@ -42,6 +46,16 @@ export const getMyCourses = async (req: Request, res: Response) => {
   res.json(courses);
 };
 
+export const getAll = async (_req: Request, res: Response) => {
+  const courses = await getAllCourses();
+  res.json(courses);
+};
+
+export const getMineAsStudent = async (req: Request, res: Response) => {
+  const courses = await getStudentCourses(req.user!.userId);
+  res.json(courses);
+};
+
 export const getOne = async (req: Request, res: Response) => {
   try {
     const courseId = req.params.id as string;
@@ -52,6 +66,16 @@ export const getOne = async (req: Request, res: Response) => {
       req.user!.role
     );
 
+    res.json(course);
+  } catch (err) {
+    res.status(400).json({ message: (err as Error).message });
+  }
+};
+
+export const getOneByCode = async (req: Request, res: Response) => {
+  try {
+    const { code } = req.params as { code: string };
+    const course = await getCourseByCode(code);
     res.json(course);
   } catch (err) {
     res.status(400).json({ message: (err as Error).message });
@@ -97,6 +121,16 @@ export const enroll = async (req: Request, res: Response) => {
       req.user!.userId
     );
 
+    res.json(course);
+  } catch (err) {
+    res.status(400).json({ message: (err as Error).message });
+  }
+};
+
+export const enrollByCode = async (req: Request, res: Response) => {
+  try {
+    const { code } = req.body;
+    const course = await enrollCourseByCode(code, req.user!.userId);
     res.json(course);
   } catch (err) {
     res.status(400).json({ message: (err as Error).message });

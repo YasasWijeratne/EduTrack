@@ -1,11 +1,15 @@
 import { Router } from "express";
 import {
   create,
+  getAll,
   getMyCourses,
+  getMineAsStudent,
   getOne,
+  getOneByCode,
   update,
   remove,
   enroll,
+  enrollByCode,
   unenroll,
 } from "./course.controller";
 
@@ -26,6 +30,25 @@ router.get(
   authMiddleware,
   roleMiddleware("lecturer"),
   getMyCourses
+);
+
+router.get(
+  "/mine",
+  authMiddleware,
+  roleMiddleware("student"),
+  getMineAsStudent
+);
+
+router.get(
+  "/all",
+  authMiddleware,
+  getAll
+);
+
+router.get(
+  "/code/:code",
+  authMiddleware,
+  getOneByCode
 );
 
 router.put(
@@ -49,6 +72,13 @@ router.post(
   authMiddleware,
   roleMiddleware("student"),
   enroll
+);
+
+router.post(
+  "/enroll",
+  authMiddleware,
+  roleMiddleware("student"),
+  enrollByCode
 );
 
 router.post(
