@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Grade from "./grade.model";
 import Submission from "../submission/submission.model";
 import Assignment from "../assignment/assignment.model";
@@ -92,12 +93,80 @@ export const createGrade = async (
 
 };
 
+
+export const updateGrade = async (
+  submissionId: string,
+  marks: number,
+  lecturerId: string
+) => {
+  const submission = await Submission.findById(submissionId);
+
+  if (!submission) {
+    throw new Error("Submission not found");
+  }
+
+  if (marks < 0 || marks > 100) {
+    throw new Error("Marks must be between 0 and 100");
+  }
+
+  const assignment = await Assignment.findById(submission.assignment);
+
+  if (!assignment) {
+    throw new Error("Assignment not found");
+  }
+
+  const course = await Course.findById(assignment.course);
+
+  if (!course) {
+    throw new Error("Course not found");
+  }
+
+  if (course.lecturer.toString() !== lecturerId) {
+    throw new Error("Not allowed to grade this submission");
+  }
+
+  const existing = await Grade.findOne({
+    submission: submissionId,
+  });
+
+  if (!existing) {
+    throw new Error("Grade not found");
+  }
+
+  existing.marks = marks;
+  existing.grade = calculateGrade(marks);
+  existing.gradedBy = new mongoose.Types.ObjectId(lecturerId);
+
+  await existing.save();
+
+  return existing;
+};
+
 export const getStudentGrades = async (
   studentId:string
 ) => {
 
+  const submissions =
+    await Submission.find({
+      student: studentId
+    });
+
+
+  const submissionIds =
+    submissions.map(
+      submission => submission._id
+    );
+
+
+  if (submissionIds.length === 0) {
+    return [];
+  }
+
+
   return await Grade.find({
-    student: studentId
+    submission:{
+      $in: submissionIds
+    }
   })
   .populate({
     path:"submission",
@@ -326,4 +395,18 @@ export const getCourseResult = async (
     performance
   };
 
+};
+
+export const getCourseResultByCode = async (
+  courseCode: string,
+  userId: string,
+  role: string
+) => {
+  const course = await Course.findOne({ code: courseCode });
+
+  if (!course) {
+    throw new Error("Course not found");
+  }
+
+  return await getCourseResult(course._id.toString(), userId, role);
 };

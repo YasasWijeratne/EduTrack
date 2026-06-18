@@ -6,6 +6,8 @@ import {
   getStudentGrades,
   getAssignmentGrades,
   getCourseResult,
+  getCourseResultByCode,
+  updateGrade,
 } from "./grade.service";
 
 
@@ -46,6 +48,29 @@ export const grade = async (
 
     res.json(result);
 
+  } catch (err) {
+    res.status(400).json({
+      message: (err as Error).message,
+    });
+  }
+};
+
+
+export const updateGradeHandler = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const submissionId = getIdFromParams(req, "submissionId");
+    const { marks } = req.body;
+
+    const result = await updateGrade(
+      submissionId,
+      marks,
+      req.user!.userId
+    );
+
+    res.json(result);
   } catch (err) {
     res.status(400).json({
       message: (err as Error).message,
@@ -132,4 +157,17 @@ export const getCourseResults = async (
 
   }
 
+};
+
+export const getCourseResultsByCode = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { code } = req.params as { code: string };
+    const result = await getCourseResultByCode(code, req.user!.userId, req.user!.role);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ message: (err as Error).message });
+  }
 };

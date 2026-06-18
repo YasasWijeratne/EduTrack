@@ -2,9 +2,11 @@ import { Router } from "express";
 
 import {
   grade,
+  updateGradeHandler,
   getMine,
   getByAssignment,
-  getCourseResults
+  getCourseResults,
+  getCourseResultsByCode
 } from "./grade.controller";
 
 import { authMiddleware } from "../../middleware/auth.middleware";
@@ -19,6 +21,14 @@ router.post(
   authMiddleware,
   roleMiddleware("lecturer"),
   grade
+);
+
+
+router.put(
+  "/submission/:submissionId",
+  authMiddleware,
+  roleMiddleware("lecturer"),
+  updateGradeHandler
 );
 
 
@@ -41,6 +51,12 @@ router.get(
   "/course/:courseId",
   authMiddleware,
   getCourseResults
+);
+
+router.get(
+  "/course-code/:code",
+  authMiddleware,
+  getCourseResultsByCode
 );
 
 
