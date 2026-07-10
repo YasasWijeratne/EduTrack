@@ -17,6 +17,7 @@ app.use(express.json());
 
 app.use(
   "/uploads",
+  authMiddleware,
   express.static(
     path.join(__dirname, "../uploads")
   )
