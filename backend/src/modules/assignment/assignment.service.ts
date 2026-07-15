@@ -56,12 +56,20 @@ export const getAssignmentsByCourse = async (
     if (!isEnrolled) {
       throw new Error("You are not enrolled in this course");
     }
+
+    return await Assignment.find({
+      course: courseId,
+    });
   }
 
   if (userRole === "lecturer") {
     if (course.lecturer.toString() !== userId) {
       throw new Error("Not allowed to view assignments for this course");
     }
+
+    return await Assignment.find({
+      course: courseId,
+    });
   }
 
   if (userRole === "admin") {
@@ -70,9 +78,7 @@ export const getAssignmentsByCourse = async (
     });
   }
 
-  return await Assignment.find({
-    course: courseId,
-  });
+  throw new Error("Not allowed to view assignments for this course");
 };
 
 export const getAssignmentsByCourseCode = async (
